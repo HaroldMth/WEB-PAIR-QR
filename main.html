@@ -1,84 +1,216 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link rel="shortcut icon" type="image/x-icon" href="./img/Hans-Xmd.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hans Pair 🌟</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
     body {
       display: flex;
-      flex-direction: column; /* Stack items vertically */
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
       margin: 0;
-      background-color: black; /* Set the background color to black */
+      background: url('https://i.ibb.co/b6FNf6M/8cbf0b47-fd5f-4044-a133-56b6decadcfc.jpg') no-repeat center center/cover;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      z-index: 1;
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: 25px;
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     .btn {
-      --color: #00A97F;
-      --color2: rgb(10, 25, 30);
-      width: 200px; /* Set a fixed width for the buttons */
-      padding: 0.8em 1.75em;
-      background-color: transparent;
-      border-radius: 6px;
-      border: .3px solid var(--color);
-      transition: .5s;
       position: relative;
-      overflow: hidden;
-      cursor: pointer;
-      z-index: 1;
-      font-weight: 300;
-      font-size: 17px;
-      font-family: 'Roboto', 'Segoe UI', sans-serif;
+      width: 250px;
+      padding: 15px 30px;
+      background: transparent;
+      border: 3px solid #ffffff;
+      border-radius: 15px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
       text-transform: uppercase;
-      color: var(--color);
-      margin-bottom: 10px; /* Add margin to separate buttons */
-    }
-
-    .btn::after, .btn::before {
-      content: '';
-      display: block;
-      height: 100%;
-      width: 100%;
-      transform: skew(90deg) translate(-50%, -50%);
-      position: absolute;
-      inset: 50%;
-      left: 25%;
-      z-index: -1;
-      transition: .5s ease-out;
-      background-color: var(--color);
+      cursor: pointer;
+      overflow: hidden;
+      margin: 15px;
+      text-align: center;
+      transition: all 0.4s ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
     }
 
     .btn::before {
-      top: -50%;
-      left: -25%;
-      transform: skew(90deg) rotate(180deg) translate(-50%, -50%);
-    }
-
-    .btn:hover::before {
-      transform: skew(45deg) rotate(180deg) translate(-50%, -50%);
-    }
-
-    .btn:hover::after {
-      transform: skew(45deg) translate(-50%, -50%);
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 350%;
+      height: 350%;
+      background: linear-gradient(45deg, rgba(255, 20, 147, 0.5), rgba(0, 191, 255, 0.5));
+      transition: transform 0.4s, opacity 0.4s;
+      transform: translate(-50%, -50%) rotate(45deg);
+      z-index: 0;
+      opacity: 0.5;
+      border-radius: 50%;
     }
 
     .btn:hover {
-      color: var(--color2);
+      color: #000;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 20px rgba(255, 20, 147, 1), 0 0 30px rgba(0, 191, 255, 1);
+      transform: scale(1.1);
+    }
+
+    .btn:hover::before {
+      transform: translate(-50%, -50%) rotate(0deg);
+      opacity: 0.9;
     }
 
     .btn:active {
-      filter: brightness(.7);
-      transform: scale(.98);
+      filter: brightness(0.6);
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 600px) {
+      .btn {
+        width: 200px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <button onclick="window.open('/pair', '_self')" class="btn">PAIR CODE</button>
+    <button onclick="window.open('https://github.com/HAROLDMTH', '_blank')" class="btn">GitHub</button>
+    <button onclick="window.open('https://youtube.com/@HANSTECH0', '_blank')" class="btn">YouTube</button>
+    <button onclick="window.open('https://t.me/hanstech0', '_blank')" class="btn">Telegram</button>
+    <button onclick="window.open('https://www.instagram.com/HAROLDMTH?igsh=MXF3OHgzcnJsZzhqNQ==', '_blank')" class="btn">Instagram</button>
+  </div>
+</body>
+</html><!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" type="image/x-icon" href="./img/Hans-Xmd.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hans Pair 🌟</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-  <button onclick="window.open(`/qr`)" class="btn">qr code</button>
-  <button onclick="window.open(`/pair`)" class="btn">pair code</button>
-  <button onclick="window.open(`https://github.com/GlobalTechInfo`)" class="btn">github</button>
-  <button onclick="window.open(`https://whatsapp.com/channel/0029VagJIAr3bbVBCpEkAM07`)" class="btn">whatsapp</button>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: url('https://i.ibb.co/b6FNf6M/8cbf0b47-fd5f-4044-a133-56b6decadcfc.jpg') no-repeat center center/cover;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
 
+    .container {
+      text-align: center;
+      z-index: 1;
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: 25px;
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .btn {
+      position: relative;
+      width: 250px;
+      padding: 15px 30px;
+      background: transparent;
+      border: 3px solid #ffffff;
+      border-radius: 15px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      cursor: pointer;
+      overflow: hidden;
+      margin: 15px;
+      text-align: center;
+      transition: all 0.4s ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 350%;
+      height: 350%;
+      background: linear-gradient(45deg, rgba(255, 20, 147, 0.5), rgba(0, 191, 255, 0.5));
+      transition: transform 0.4s, opacity 0.4s;
+      transform: translate(-50%, -50%) rotate(45deg);
+      z-index: 0;
+      opacity: 0.5;
+      border-radius: 50%;
+    }
+
+    .btn:hover {
+      color: #000;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 20px rgba(255, 20, 147, 1), 0 0 30px rgba(0, 191, 255, 1);
+      transform: scale(1.1);
+    }
+
+    .btn:hover::before {
+      transform: translate(-50%, -50%) rotate(0deg);
+      opacity: 0.9;
+    }
+
+    .btn:active {
+      filter: brightness(0.6);
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 600px) {
+      .btn {
+        width: 200px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button onclick="window.open('/pair', '_self')" class="btn">PAIR CODE</button>
+    <button onclick="window.open('/qr', '_self')" class="btn">QR CODE</button>
+    <button onclick="window.open('https://github.com/HAROLDMTH', '_blank')" class="btn">GitHub</button>
+    <button onclick="window.open('https://youtube.com/@HANSTECH0', '_blank')" class="btn">YouTube</button>
+    <button onclick="window.open('https://t.me/hanstech0', '_blank')" class="btn">Telegram</button>
+    <button onclick="window.open('https://www.instagram.com/HAROLDMTH?igsh=MXF3OHgzcnJsZzhqNQ==', '_blank')" class="btn">Instagram</button>
+  </div>
 </body>
 </html>
