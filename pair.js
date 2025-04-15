@@ -4,23 +4,16 @@ const { exec } = require("child_process");
 let router = express.Router();
 const pino = require("pino");
 const { Boom } = require("@hapi/boom");
+
+// Updated alive message with the channel link and cool wording
 const MESSAGE = process.env.MESSAGE || `
-*SESSION GENERATED SUCCESSFULY* ✅
+🔥 *HANS TECH LIVE SESSION* 🔥
 
-*Gɪᴠᴇ ᴀ ꜱᴛᴀʀ ᴛᴏ ʀᴇᴘᴏ ꜰᴏʀ ᴄᴏᴜʀᴀɢᴇ* 🌟
-https://github.com/GuhailTechInfo/ULTRA-MD
-
-*Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ ꜰᴏʀ ϙᴜᴇʀʏ* 💭
-https://t.me/GlobalBotInc
-https://whatsapp.com/channel/0029VagJIAr3bbVBCpEkAM07
-
-
-*Yᴏᴜ-ᴛᴜʙᴇ ᴛᴜᴛᴏʀɪᴀʟꜱ* 🪄 
-https://youtube.com/GlobalTechInfo
-
-*ULTRA-MD--WHATTSAPP-BOT* 🥀
+Your session is now active with cutting-edge Hans Tech technology.
+Stay updated by joining our channel: https://whatsapp.com/channel/0029VaZDIdxDTkKB4JSWUk1O
 `;
 
+// Required for uploading the session file
 const { upload } = require('./mega');
 const {
     default: makeWASocket,
@@ -45,15 +38,20 @@ router.get('/', async (req, res) => {
             let Smd = makeWASocket({
                 auth: {
                     creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+                    keys: makeCacheableSignalKeyStore(
+                        state.keys,
+                        pino({ level: "fatal" }).child({ level: "fatal" })
+                    ),
                 },
                 printQRInTerminal: false,
                 logger: pino({ level: "fatal" }).child({ level: "fatal" }),
                 browser: Browsers.macOS("Safari"),
             });
 
+            // If the credentials are not registered, then we request a pairing code.
             if (!Smd.authState.creds.registered) {
                 await delay(1500);
+                // Remove any non-numeric characters from the provided number
                 num = num.replace(/[^0-9]/g, '');
                 const code = await Smd.requestPairingCode(num);
                 if (!res.headersSent) {
@@ -68,12 +66,10 @@ router.get('/', async (req, res) => {
                 if (connection === "open") {
                     try {
                         await delay(10000);
-                        if (fs.existsSync('./auth_info_baileys/creds.json'));
-
                         const auth_path = './auth_info_baileys/';
                         let user = Smd.user.id;
 
-                        // Define randomMegaId function to generate random IDs
+                        // Generate a random session ID
                         function randomMegaId(length = 6, numberLength = 4) {
                             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
                             let result = '';
@@ -84,17 +80,24 @@ router.get('/', async (req, res) => {
                             return `${result}${number}`;
                         }
 
-                        // Upload credentials to Mega
-                        const mega_url = await upload(fs.createReadStream(auth_path + 'creds.json'), `${randomMegaId()}.json`);
+                        // Upload credentials file to Mega
+                        const mega_url = await upload(
+                            fs.createReadStream(auth_path + 'creds.json'),
+                            `${randomMegaId()}.json`
+                        );
                         const Id_session = mega_url.replace('https://mega.nz/file/', '');
+                        // Prepend the session identifier with "HANS-BYTE~"
+                        const sessionCode = `HANS-BYTE~ ${Id_session}`;
 
-                        const Scan_Id = Id_session;
-
-                        let msgsss = await Smd.sendMessage(user, { text: Scan_Id });
-                        await Smd.sendMessage(user, { text: MESSAGE }, { quoted: msgsss });
+                        // Send the session ID and the alive message via chat
+                        let sidMessage = await Smd.sendMessage(user, { text: sessionCode });
+                        await Smd.sendMessage(user, { text: MESSAGE }, { quoted: sidMessage });
                         await delay(1000);
-                        try { await fs.emptyDirSync(__dirname + '/auth_info_baileys'); } catch (e) {}
-
+                        try {
+                            await fs.emptyDirSync(__dirname + '/auth_info_baileys');
+                        } catch (e) {
+                            console.log("Error emptying auth_info_baileys:", e);
+                        }
                     } catch (e) {
                         console.log("Error during file upload or message send: ", e);
                     }
@@ -140,4 +143,3 @@ router.get('/', async (req, res) => {
 });
 
 module.exports = router;
-                    
