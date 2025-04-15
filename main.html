@@ -1,130 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link rel="shortcut icon" type="image/x-icon" href="./img/Hans-Xmd.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hans Pair 🌟</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
     body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
       margin: 0;
-      font-family: 'Roboto', 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #4e9f3d, #34d7b7, #55c7f7);
-      background-size: 300% 300%;
-      animation: gradientAnimation 10s ease infinite;
+      padding: 0;
+      min-height: 200vh;
+      background: linear-gradient(180deg, #0f0c29, #302b63, #24243e);
+      background-image: url('https://i.ibb.co/b6FNf6M/8cbf0b47-fd5f-4044-a133-56b6decadcfc.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
     }
 
-    @keyframes gradientAnimation {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    .container {
+      max-width: 800px;
+      margin: 100px auto;
+      padding: 50px 20px;
+      background: rgba(0, 0, 0, 0.65);
+      border-radius: 25px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 50px rgba(255, 20, 147, 0.2);
+      text-align: center;
+      animation: fadeIn 1.2s ease-in-out;
     }
 
     h1 {
-      color: white;
-      font-size: 3.5rem;
+      font-size: 3rem;
+      background: linear-gradient(90deg, #ff1493, #00bfff, #8a2be2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 40px;
-      text-align: center;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      font-weight: 700;
-      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .btn {
-      width: 250px;
-      padding: 15px 25px;
-      margin: 10px;
-      background: transparent;
-      border-radius: 25px;
-      border: 2px solid #ffffff;
-      font-size: 18px;
+      display: block;
+      width: 80%;
+      max-width: 300px;
+      margin: 20px auto;
+      padding: 18px 30px;
+      font-size: 20px;
       font-weight: bold;
+      color: #fff;
       text-transform: uppercase;
-      color: white;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+      border: 2px solid #fff;
+      border-radius: 20px;
+      background: transparent;
       cursor: pointer;
-      transition: all 0.4s ease;
-      box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      transition: 0.4s ease-in-out;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
     }
 
-    /* Add shine effect on hover */
     .btn::before {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      height: 200%;
-      width: 200%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: skewX(45deg);
-      transition: all 0.5s;
-    }
-
-    .btn:hover::before {
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
+      top: 50%;
+      left: 50%;
+      width: 400%;
+      height: 400%;
+      background: radial-gradient(circle, rgba(255, 20, 147, 0.3), rgba(0, 191, 255, 0.3), rgba(138, 43, 226, 0.3));
+      transform: translate(-50%, -50%) rotate(45deg);
+      transition: all 0.5s ease-in-out;
+      border-radius: 50%;
+      opacity: 0.4;
+      z-index: 0;
     }
 
     .btn:hover {
-      background-color: #ffffff;
-      color: #333;
-      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.5);
+      color: #000;
+      background: rgba(255, 255, 255, 0.9);
       transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255, 20, 147, 0.6), 0 0 35px rgba(0, 191, 255, 0.6);
+    }
+
+    .btn:hover::before {
+      transform: translate(-50%, -50%) scale(1.1);
+      opacity: 0.9;
     }
 
     .btn:active {
-      filter: brightness(0.9);
-      transform: scale(0.98);
+      transform: scale(0.95);
+      filter: brightness(0.8);
     }
 
-    /* Responsive Design */
+    .footer {
+      text-align: center;
+      padding: 50px 10px;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     @media (max-width: 600px) {
       h1 {
         font-size: 2.2rem;
       }
+
       .btn {
-        width: 80%;
-        padding: 12px 20px;
         font-size: 16px;
+        width: 90%;
       }
     }
-
-    @media (min-width: 600px) and (max-width: 1024px) {
-      h1 {
-        font-size: 2.8rem;
-      }
-      .btn {
-        width: 220px;
-        padding: 14px 22px;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      h1 {
-        font-size: 3.5rem;
-      }
-      .btn {
-        width: 250px;
-        padding: 15px 25px;
-      }
-    }
-
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>🚀 Hans Pair System</h1>
+    <button onclick="window.open('/pair', '_self')" class="btn">Pair Code</button>
+    <button onclick="window.open('/qr', '_self')" class="btn">QR Code</button>
+    <button onclick="window.open('https://github.com/HAROLDMTH', '_blank')" class="btn">GitHub</button>
+    <button onclick="window.open('https://youtube.com/@HANSTECH0', '_blank')" class="btn">YouTube</button>
+    <button onclick="window.open('https://t.me/hanstech0', '_blank')" class="btn">Telegram</button>
+    <button onclick="window.open('https://www.instagram.com/HAROLDMTH', '_blank')" class="btn">Instagram</button>
+  </div>
 
-  <button onclick="window.open(`/qr`)" class="btn">QR Code</button>
-  <button onclick="window.open(`/pair`)" class="btn">Pair Code</button>
-  <button onclick="window.open(`https://github.com/GlobalTechInfo`)" class="btn">GitHub</button>
-  <button onclick="window.open(`https://whatsapp.com/channel/0029VagJIAr3bbVBCpEkAM07`)" class="btn">WhatsApp</button>
-
+  <div class="footer">
+    © 2024 - 2099 Hans Tech. Crafted with 💖 in pink-blue-purple light.
+  </div>
 </body>
 </html>
