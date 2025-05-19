@@ -31,7 +31,7 @@ router.get('/', async (req, res) =>  {
     delay, 
     DisconnectReason, 
     makeInMemoryStore 
-  } = require("@whiskeysockets/baileys");
+  } = require("baileys");
 
   const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
 
@@ -105,7 +105,7 @@ router.get('/', async (req, res) =>  {
                   </div>
                   <div class="info">
                     <p>Powered by <strong>Hans Tech</strong></p>
-                    <p><a href="https://hans.tech" target="_blank">Visit our website</a> | <a href="https://support.hans.tech" target="_blank">Get Support</a></p>
+                    <p><a href="https://github.com/haroldmth" target="_blank">Visit our website</a> | <a href="https://hans-web.vercel.app" target="_blank">Get Support</a></p>
                   </div>
                 </body>
                 </html>
