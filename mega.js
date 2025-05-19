@@ -2,50 +2,53 @@ const mega = require("megajs");
 const fs = require("fs");
 
 const auth = {
-  email: 'mibeharold2@gmail.com',
-  password: 'Harold123best',
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246'
+  email: "mibeharold2@gmail.com",
+  password: "Harold123best",
+  userAgent: "HansTechUploader/1.0"
 };
 
-const upload = (filePath, name) => {
+const upload = async (filePath, fileName) => {
   return new Promise((resolve, reject) => {
-    if (!auth.email || !auth.password || !auth.userAgent) {
-      reject(new Error("Missing required authentication fields"));
-      return;
-    }
-
     const storage = new mega.Storage(auth);
 
-    storage.on('ready', () => {
-      const fileSize = fs.statSync(filePath).size;
-      const fileStream = fs.createReadStream(filePath);
+    storage.on("ready", () => {
+      console.log("✅ Logged into Mega");
+
+      const stats = fs.statSync(filePath);
+      const stream = fs.createReadStream(filePath);
 
       const uploadStream = storage.upload({
-        name,
-        size: fileSize,
-        allowUploadBuffering: true
+        name: fileName,
+        size: stats.size
       });
 
-      fileStream.pipe(uploadStream);
+      stream.pipe(uploadStream);
 
-      uploadStream.on('complete', (file) => {
+      uploadStream.on("complete", (file) => {
+        console.log("✅ Upload complete");
         file.link((err, url) => {
           storage.close();
-          if (err) return reject(err);
+          if (err) return reject("❌ Error getting link: " + err.message);
+          console.log("🔗 File link:", url);
           resolve(url);
         });
       });
 
-      uploadStream.on('error', (err) => {
+      uploadStream.on("error", (err) => {
         storage.close();
-        reject(err);
+        reject("❌ Upload error: " + err.message);
       });
     });
 
-    storage.on('error', (err) => {
-      reject(err);
+    storage.on("error", (err) => {
+      reject("❌ Storage login error: " + err.message);
     });
   });
 };
+
+// Example usage (Uncomment to test)
+// upload("test.txt", "my_test_file.txt")
+//   .then(link => console.log("Download link:", link))
+//   .catch(err => console.error(err));
 
 module.exports = { upload };
