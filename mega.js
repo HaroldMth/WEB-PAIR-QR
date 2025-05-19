@@ -9,11 +9,6 @@ const auth = {
 
 const upload = (filePath, name) => {
   return new Promise((resolve, reject) => {
-    if (!auth.email || !auth.password || !auth.userAgent) {
-      reject(new Error("Missing required authentication fields"));
-      return;
-    }
-
     const storage = new mega.Storage(auth);
 
     storage.on('ready', () => {
