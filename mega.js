@@ -1,12 +1,13 @@
 const mega = require("megajs");
+const fs = require("fs");
 
 const auth = {
-  email: 'mibeharold@gmail.com',
-  password: 'hansbyte237',
+  email: 'mibeharold2@gmail.com',
+  password: 'Harold123best',
   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246'
 };
 
-const upload = (data, name) => {
+const upload = (filePath, name) => {
   return new Promise((resolve, reject) => {
     if (!auth.email || !auth.password || !auth.userAgent) {
       reject(new Error("Missing required authentication fields"));
@@ -16,14 +17,13 @@ const upload = (data, name) => {
     const storage = new mega.Storage(auth);
 
     storage.on('ready', () => {
-      // Upload the file
-      const file = storage.upload({ name, allowUploadBuffering: true });
+      const fileSize = fs.statSync(filePath).size;
+      const fileStream = fs.createReadStream(filePath);
+      const uploadStream = storage.upload({ name, size: fileSize });
 
-      // Write the data to the upload stream
-      data.pipe(file);
+      fileStream.pipe(uploadStream);
 
-      file.on('end', () => {
-        // When upload finishes, get the public link
+      uploadStream.on('complete', (file) => {
         file.link((err, url) => {
           storage.close();
           if (err) return reject(err);
@@ -31,7 +31,7 @@ const upload = (data, name) => {
         });
       });
 
-      file.on('error', (err) => {
+      uploadStream.on('error', (err) => {
         storage.close();
         reject(err);
       });
