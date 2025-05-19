@@ -8,7 +8,6 @@ const path = require('path');
 const fs = require("fs-extra");
 const { Boom } = require("@hapi/boom");
 
-// Updated alive message details (still used later for chat messages)
 const MESSAGE = process.env.MESSAGE || `
 *🔥 HANS TECH LIVE SESSION! 🔥*
 
@@ -18,185 +17,137 @@ https://whatsapp.com/channel/0029VaZDIdxDTkKB4JSWUk1O
 Stay connected and experience the future of tech with Hans Tech!
 `;
 
-// Clean the auth directory if it exists
+// Clean old sessions
 if (fs.existsSync('./auth_info_baileys')) {
-  fs.emptyDirSync(__dirname + '/auth_info_baileys');
+  fs.emptyDirSync(path.join(__dirname, 'auth_info_baileys'));
 }
 
-router.get('/', async (req, res) =>  {
-  const { 
-    default: SuhailWASocket, 
-    useMultiFileAuthState, 
-    Browsers, 
-    delay, 
-    DisconnectReason, 
-    makeInMemoryStore 
+router.get('/', async (req, res) => {
+  const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    Browsers,
+    delay,
+    DisconnectReason,
+    makeInMemoryStore
   } = require("baileys");
 
   const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) });
 
-  async function SUHAIL() {
-    const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/auth_info_baileys');
+  async function startSession() {
+    const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, 'auth_info_baileys'));
     try {
-      let Smd = SuhailWASocket({ 
+      const sock = makeWASocket({
         printQRInTerminal: false,
-        logger: pino({ level: "silent" }), 
+        logger: pino({ level: "silent" }),
         browser: Browsers.macOS("Desktop"),
-        auth: state 
+        auth: state
       });
-      
-      Smd.ev.on("connection.update", async (s) => {
-        const { connection, lastDisconnect, qr } = s;
-        
-        // When a QR code is generated, send a cool HTML page with the QR displayed in the center
-        if (qr) {
-          if (!res.headersSent) {
-            try {
-              const qrBuffer = await toBuffer(qr);
-              const base64Image = qrBuffer.toString('base64');
-              const htmlPage = `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                  <meta charset="UTF-8" />
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                  <title>Hans Tech QR Session</title>
-                  <style>
-                    body {
-                      background: #1d1f21;
-                      color: #c5c8c6;
-                      font-family: Arial, sans-serif;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      height: 100vh;
-                      margin: 0;
-                    }
-                    h1 {
-                      color: #4caf50;
-                      margin-bottom: 20px;
-                    }
-                    .qr-container {
-                      padding: 20px;
-                      border: 3px solid #4caf50;
-                      border-radius: 12px;
-                      background: #292b2c;
-                      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-                    }
-                    .info {
-                      margin-top: 30px;
-                      font-size: 0.9em;
-                      text-align: center;
-                    }
-                    .info a {
-                      color: #4caf50;
-                      text-decoration: none;
-                    }
-                    .info a:hover {
-                      text-decoration: underline;
-                    }
-                  </style>
-                </head>
-                <body>
-                  <h1>Scan this QR Code</h1>
-                  <div class="qr-container">
-                    <img src="data:image/png;base64,${base64Image}" alt="QR Code" />
-                  </div>
-                  <div class="info">
-                    <p>Powered by <strong>Hans Tech</strong></p>
-                    <p><a href="https://github.com/haroldmth" target="_blank">Visit our website</a> | <a href="https://hans-web.vercel.app" target="_blank">Get Support</a></p>
-                  </div>
-                </body>
-                </html>
-              `;
-              return res.send(htmlPage);
-            } catch (error) {
-              console.error("Error generating QR HTML page:", error);
-              return res.status(500).send("Error generating QR code");
-            }
+
+      sock.ev.on("connection.update", async ({ connection, lastDisconnect, qr }) => {
+        if (qr && !res.headersSent) {
+          try {
+            const qrBuffer = await toBuffer(qr);
+            const base64 = qrBuffer.toString('base64');
+            const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hans Tech QR</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 40px;
+    }
+    img {
+      border: 4px solid #4caf50;
+      border-radius: 12px;
+    }
+    a {
+      color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scan this QR with WhatsApp</h1>
+  <img src="data:image/png;base64,${base64}" alt="QR Code" />
+  <p>Powered by <strong>Hans Tech</strong><br>
+  <a href="https://github.com/haroldmth" target="_blank">GitHub</a> |
+  <a href="https://hans-web.vercel.app" target="_blank">Support</a></p>
+</body>
+</html>`;
+            return res.send(html);
+          } catch (err) {
+            console.error("QR generation error:", err);
+            return res.status(500).send("Failed to generate QR");
           }
         }
-        
-        // Once connected, send the session info and alive messages via chat
-        if (connection == "open") {
+
+        if (connection === "open") {
           await delay(3000);
-          let user = Smd.user.id;
-          
-          // Generate a random session ID using a custom function
-          function randomMegaId(length = 6, numberLength = 4) {
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          const user = sock.user.id;
+
+          function randomSessionId(len = 6, numLen = 4) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
-            for (let i = 0; i < length; i++) {
-              result += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            const number = Math.floor(Math.random() * Math.pow(10, numberLength));
-            return `${result}${number}`;
+            for (let i = 0; i < len; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            const num = Math.floor(Math.random() * Math.pow(10, numLen));
+            return `${result}${num}`;
           }
-          
-          const auth_path = './auth_info_baileys/';
-          const mega_url = await upload(fs.createReadStream(auth_path + 'creds.json'), `${randomMegaId()}.json`);
-          const string_session = mega_url.replace('https://mega.nz/file/', '');
-          const Scan_Id = string_session;
-          
-          // Prepend the session identifier with "HANS-BYTE~"
-          const sessionCode = `HANS-BYTE~ ${Scan_Id}`;
-          
+
+          const authPath = path.join(__dirname, 'auth_info_baileys', 'creds.json');
+          const megaUrl = await upload(fs.createReadStream(authPath), `${randomSessionId()}.json`);
+          const sessionId = `HANS-BYTE~ ${megaUrl.replace('https://mega.nz/file/', '')}`;
+
           console.log(`
 ====================  SESSION ID  ==========================
-SESSION-ID ==> ${sessionCode}
--------------------   SESSION CLOSED   ---------------------
+SESSION-ID ==> ${sessionId}
+------------------------------------------------------------
           `);
-          
-          // Send the session code then the custom alive message over chat
-          let sidMessage = await Smd.sendMessage(user, { text: sessionCode });
-          await Smd.sendMessage(user, { text: MESSAGE }, { quoted: sidMessage });
+
+          const sent = await sock.sendMessage(user, { text: sessionId });
+          await sock.sendMessage(user, { text: MESSAGE }, { quoted: sent });
+
           await delay(1000);
-          try {
-            await fs.emptyDirSync(__dirname + '/auth_info_baileys');
-          } catch (e) {
-            console.error("Error clearing auth info directory:", e);
-          }
+          await fs.emptyDir(path.join(__dirname, 'auth_info_baileys'));
         }
-        
-        Smd.ev.on('creds.update', saveCreds);
-        
+
+        sock.ev.on("creds.update", saveCreds);
+
         if (connection === "close") {
-          let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
-          if (reason === DisconnectReason.connectionClosed) {
-            console.log("Connection closed!");
-          } else if (reason === DisconnectReason.connectionLost) {
-            console.log("Connection lost from server!");
-          } else if (reason === DisconnectReason.restartRequired) {
-            console.log("Restart required, restarting...");
-            SUHAIL().catch(err => console.log(err));
-          } else if (reason === DisconnectReason.timedOut) {
-            console.log("Connection timed out!");
-          } else {
-            console.log('Connection closed with bot. Please run again.');
-            console.log(reason);
-            await delay(5000);
-            exec('pm2 restart qasim');
-            process.exit(0);
+          const code = new Boom(lastDisconnect?.error)?.output.statusCode;
+          switch (code) {
+            case DisconnectReason.connectionClosed:
+              console.log("Connection closed");
+              break;
+            case DisconnectReason.connectionLost:
+              console.log("Connection lost");
+              break;
+            case DisconnectReason.restartRequired:
+              console.log("Restart required");
+              return startSession();
+            case DisconnectReason.timedOut:
+              console.log("Connection timed out");
+              break;
+            default:
+              console.log("Disconnected unexpectedly:", code);
+              await delay(5000);
+              exec("pm2 restart qasim");
+              process.exit(1);
           }
         }
       });
     } catch (err) {
-      console.error("Error in SUHAIL():", err);
-      exec('pm2 restart qasim');
-      await fs.emptyDirSync(__dirname + '/auth_info_baileys');
+      console.error("Startup error:", err);
+      await fs.emptyDir(path.join(__dirname, 'auth_info_baileys'));
+      exec("pm2 restart qasim");
     }
   }
-  
-  // Start the connection logic and ensure errors trigger a cleanup and restart
-  SUHAIL().catch(async (err) => {
-    console.error(err);
-    await fs.emptyDirSync(__dirname + '/auth_info_baileys');
-    exec('pm2 restart qasim');
-  });
-  
-  // Return the promise (though in this design the response is already sent once QR is generated)
-  return await SUHAIL();
+
+  await startSession();
 });
 
 module.exports = router;
