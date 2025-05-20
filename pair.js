@@ -1,145 +1,120 @@
 const express = require('express');
 const fs = require('fs-extra');
+const path = require('path');
 const { exec } = require("child_process");
-let router = express.Router();
 const pino = require("pino");
 const { Boom } = require("@hapi/boom");
-
-// Updated alive message with the channel link and cool wording
-const MESSAGE = process.env.MESSAGE || `
-🔥 *HANS TECH LIVE SESSION* 🔥
-
-Your session is now active with cutting-edge Hans Tech technology.
-Stay updated by joining our channel: https://whatsapp.com/channel/0029VaZDIdxDTkKB4JSWUk1O
-`;
-
-// Required for uploading the session file
-const { upload } = require('./mega');
+const { upload } = require('./gofile');              // ← GoFile module
 const {
-    default: makeWASocket,
-    useMultiFileAuthState,
-    delay,
-    makeCacheableSignalKeyStore,
-    Browsers,
-    DisconnectReason
+  default: makeWASocket,
+  useMultiFileAuthState,
+  delay,
+  makeCacheableSignalKeyStore,
+  Browsers,
+  DisconnectReason
 } = require("baileys");
 
-// Ensure the directory is empty when the app starts
+let router = express.Router();
+
+const MESSAGE = process.env.MESSAGE || `
+🔥 *HANS TECH LIVE SESSION* 🔥
+Join our channel: https://whatsapp.com/channel/0029VaZDIdxDTkKB4JSWUk1O
+`;
+
 if (fs.existsSync('./auth_info_baileys')) {
-    fs.emptyDirSync(__dirname + '/auth_info_baileys');
+  fs.emptyDirSync(path.resolve(__dirname, 'auth_info_baileys'));
 }
 
 router.get('/', async (req, res) => {
-    let num = req.query.number;
+  let num = (req.query.number || '').replace(/\D/g, '');
 
-    async function SUHAIL() {
-        const { state, saveCreds } = await useMultiFileAuthState(`./auth_info_baileys`);
-        try {
-            let Smd = makeWASocket({
-                auth: {
-                    creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(
-                        state.keys,
-                        pino({ level: "fatal" }).child({ level: "fatal" })
-                    ),
-                },
-                printQRInTerminal: false,
-                logger: pino({ level: "fatal" }).child({ level: "fatal" }),
-                browser: Browsers.macOS("Safari"),
-            });
+  async function SUHAIL() {
+    const { state, saveCreds } = await useMultiFileAuthState('./auth_info_baileys');
+    try {
+      const Smd = makeWASocket({
+        auth: {
+          creds: state.creds,
+          keys: makeCacheableSignalKeyStore(state.keys, pino().child({ level: "fatal" }))
+        },
+        printQRInTerminal: false,
+        browser: Browsers.macOS("Safari"),
+        logger: pino().child({ level: "fatal" })
+      });
 
-            // If the credentials are not registered, then we request a pairing code.
-            if (!Smd.authState.creds.registered) {
-                await delay(1500);
-                // Remove any non-numeric characters from the provided number
-                num = num.replace(/[^0-9]/g, '');
-                const code = await Smd.requestPairingCode(num);
-                if (!res.headersSent) {
-                    await res.send({ code });
-                }
+      if (!Smd.authState.creds.registered) {
+        await delay(1500);
+        const code = await Smd.requestPairingCode(num);
+        if (!res.headersSent) res.send({ code });
+      }
+
+      Smd.ev.on('creds.update', saveCreds);
+      Smd.ev.on("connection.update", async ({ connection, lastDisconnect }) => {
+        if (connection === "open") {
+          await delay(10000);
+          const authPath = path.resolve(__dirname, 'auth_info_baileys');
+          
+          // Generate random ID
+          function randomMegaId(len = 6, numLen = 4) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let s = '';
+            for (let i = 0; i < len; i++) {
+              s += chars.charAt(Math.floor(Math.random() * chars.length));
             }
+            return s + Math.floor(Math.random() * 10**numLen);
+          }
 
-            Smd.ev.on('creds.update', saveCreds);
-            Smd.ev.on("connection.update", async (s) => {
-                const { connection, lastDisconnect } = s;
+          try {
+            // Upload using GoFile
+            const credsFile = path.join(authPath, 'creds.json');
+            const gofileUrl = await upload(
+              credsFile,
+              `${randomMegaId()}.json`,
+              process.env.GOFILE_TOKEN
+            );
+            const Id_session = gofileUrl.split('/').pop();
+            const sessionCode = `HANS-BYTE~ ${Id_session}`;
 
-                if (connection === "open") {
-                    try {
-                        await delay(10000);
-                        const auth_path = './auth_info_baileys/';
-                        let user = Smd.user.id;
+            let sidMessage = await Smd.sendMessage(Smd.user.id, { text: sessionCode });
+            await Smd.sendMessage(Smd.user.id, { text: MESSAGE }, { quoted: sidMessage });
 
-                        // Generate a random session ID
-                        function randomMegaId(length = 6, numberLength = 4) {
-                            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                            let result = '';
-                            for (let i = 0; i < length; i++) {
-                                result += characters.charAt(Math.floor(Math.random() * characters.length));
-                            }
-                            const number = Math.floor(Math.random() * Math.pow(10, numberLength));
-                            return `${result}${number}`;
-                        }
-
-                        // Upload credentials file to Mega
-                        const mega_url = await upload(
-                            fs.createReadStream(auth_path + 'creds.json'),
-                            `${randomMegaId()}.json`
-                        );
-                        const Id_session = mega_url.replace('https://mega.nz/file/', '');
-                        // Prepend the session identifier with "HANS-BYTE~"
-                        const sessionCode = `HANS-BYTE~ ${Id_session}`;
-
-                        // Send the session ID and the alive message via chat
-                        let sidMessage = await Smd.sendMessage(user, { text: sessionCode });
-                        await Smd.sendMessage(user, { text: MESSAGE }, { quoted: sidMessage });
-                        await delay(1000);
-                        try {
-                            await fs.emptyDirSync(__dirname + '/auth_info_baileys');
-                        } catch (e) {
-                            console.log("Error emptying auth_info_baileys:", e);
-                        }
-                    } catch (e) {
-                        console.log("Error during file upload or message send: ", e);
-                    }
-
-                    await delay(100);
-                    await fs.emptyDirSync(__dirname + '/auth_info_baileys');
-                }
-
-                // Handle connection closures
-                if (connection === "close") {
-                    let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
-                    if (reason === DisconnectReason.connectionClosed) {
-                        console.log("Connection closed!");
-                    } else if (reason === DisconnectReason.connectionLost) {
-                        console.log("Connection Lost from Server!");
-                    } else if (reason === DisconnectReason.restartRequired) {
-                        console.log("Restart Required, Restarting...");
-                        SUHAIL().catch(err => console.log(err));
-                    } else if (reason === DisconnectReason.timedOut) {
-                        console.log("Connection TimedOut!");
-                    } else {
-                        console.log('Connection closed with bot. Please run again.');
-                        console.log(reason);
-                        await delay(5000);
-                        exec('pm2 restart qasim');
-                    }
-                }
-            });
-
-        } catch (err) {
-            console.log("Error in SUHAIL function: ", err);
-            exec('pm2 restart qasim');
-            console.log("Service restarted due to error");
-            SUHAIL();
-            await fs.emptyDirSync(__dirname + '/auth_info_baileys');
-            if (!res.headersSent) {
-                await res.send({ code: "Try After Few Minutes" });
-            }
+            await fs.emptyDir(authPath);
+          } catch (e) {
+            console.error("Upload/send error:", e);
+          }
         }
-    }
 
-    await SUHAIL();
+        if (connection === "close") {
+          const reason = new Boom(lastDisconnect?.error).output.statusCode;
+          switch (reason) {
+            case DisconnectReason.connectionClosed:
+              console.log("Connection closed!");
+              break;
+            case DisconnectReason.connectionLost:
+              console.log("Connection lost!");
+              break;
+            case DisconnectReason.restartRequired:
+              console.log("Restart required!");
+              SUHAIL().catch(console.error);
+              break;
+            case DisconnectReason.timedOut:
+              console.log("Connection timed out!");
+              break;
+            default:
+              console.log("Unknown disconnect, restarting...");
+              exec('pm2 restart qasim');
+          }
+        }
+      });
+
+    } catch (err) {
+      console.error("Error in SUHAIL:", err);
+      exec('pm2 restart qasim');
+      await fs.emptyDir(path.resolve(__dirname, 'auth_info_baileys'));
+      if (!res.headersSent) res.send({ code: "Try after a few minutes" });
+    }
+  }
+
+  await SUHAIL();
 });
 
 module.exports = router;
